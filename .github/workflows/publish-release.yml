@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -32,7 +33,7 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          if ("v$version" -ne $env:GITHUB_REF_NAME) {
+          if ($env:GITHUB_EVENT_NAME -eq "push" -and "v$version" -ne $env:GITHUB_REF_NAME) {
             throw "Tag $env:GITHUB_REF_NAME does not match package.json version $version."
           }
           pnpm install --frozen-lockfile
@@ -56,10 +57,8 @@ jobs:
           Compress-Archive -Path "$pwaDirectory/*" -DestinationPath $pwaArchive -Force
           Compress-Archive -Path "$windowsDirectory/*" -DestinationPath $windowsArchive -Force
 
-          $checksums = @(
-            Get-FileHash -Algorithm SHA256 $pwaArchive,
-            Get-FileHash -Algorithm SHA256 $windowsArchive
-          ) | ForEach-Object { "{0}  {1}" -f $_.Hash, (Split-Path $_.Path -Leaf) }
+          $checksums = Get-FileHash -Algorithm SHA256 -Path $pwaArchive, $windowsArchive |
+            ForEach-Object { "{0}  {1}" -f $_.Hash, (Split-Path $_.Path -Leaf) }
           Set-Content -Path "releases/SHA256SUMS.txt" -Value $checksums -Encoding ascii
 
       - name: Publish GitHub release
