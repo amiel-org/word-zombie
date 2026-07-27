@@ -1,0 +1,76 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Build and publish Windows and PWA packages
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Validate version and install dependencies
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ("v$version" -ne $env:GITHUB_REF_NAME) {
+            throw "Tag $env:GITHUB_REF_NAME does not match package.json version $version."
+          }
+          pnpm install --frozen-lockfile
+
+      - name: Test and build packages
+        shell: pwsh
+        run: |
+          pnpm test
+          pnpm package:pwa
+          pnpm package:windows
+
+      - name: Create release archives and checksums
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $pwaDirectory = "releases/word-zombie-pwa-v$version"
+          $windowsDirectory = "releases/word-zombie-windows-v$version"
+          $pwaArchive = "releases/Word-Zombie-PWA-v$version.zip"
+          $windowsArchive = "releases/Word-Zombie-Windows-x64-v$version.zip"
+
+          Compress-Archive -Path "$pwaDirectory/*" -DestinationPath $pwaArchive -Force
+          Compress-Archive -Path "$windowsDirectory/*" -DestinationPath $windowsArchive -Force
+
+          $checksums = @(
+            Get-FileHash -Algorithm SHA256 $pwaArchive,
+            Get-FileHash -Algorithm SHA256 $windowsArchive
+          ) | ForEach-Object { "{0}  {1}" -f $_.Hash, (Split-Path $_.Path -Leaf) }
+          Set-Content -Path "releases/SHA256SUMS.txt" -Value $checksums -Encoding ascii
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          gh release create "v$version" `
+            "releases/Word-Zombie-PWA-v$version.zip#PWA 发布包" `
+            "releases/Word-Zombie-Windows-x64-v$version.zip#Windows x64 单文件版" `
+            "releases/SHA256SUMS.txt#SHA256 校验" `
+            --title "单词大战僵尸 v$version" `
+            --generate-notes

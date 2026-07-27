@@ -1,0 +1,32 @@
+{
+  "name": "word-zombie",
+  "version": "2.1.0",
+  "packageManager": "pnpm@10.26.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "package:windows": "pnpm build && node scripts/build_windows_portable.mjs",
+    "package:pwa": "pnpm build && node scripts/build_pwa_package.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "import:frequency": "python scripts/import_frequency_workbook.py"
+  },
+  "dependencies": {
+    "dexie": "^4.4.4",
+    "phaser": "^3.90.0",
+    "workbox-window": "^7.4.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "fake-indexeddb": "^6.2.5",
+    "postject": "1.0.0-alpha.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^4.1.10"
+  }
+}

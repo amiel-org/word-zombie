@@ -1,0 +1,16 @@
+node_modules/
+scripts/artifact/node_modules/
+outputs/*/preview_*.png
+dist/
+output/
+outputs/
+releases/
+tmp/
+packaging/windows/generated/
+playwright-report/
+test-results/
+coverage/
+dev-server*.log
+.playwright-cli/
+__pycache__/
+*.py[cod]

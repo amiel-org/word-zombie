@@ -1,0 +1,22 @@
+{
+  "sourceFile": "蝶变英语高、中、低频词分类表(1).xlsx",
+  "sourceSha256": "155444a776f8b948a440d753b6a78198389ce7a5db896fb64f16b66bd30b7bae",
+  "sheetCounts": {
+    "高频词分组": 660,
+    "中频核心词分组": 660,
+    "中频提升词分租": 660,
+    "低频拓展词": 1200
+  },
+  "bandCounts": {
+    "high": 660,
+    "medium": 1320,
+    "mediumCore": 660,
+    "mediumAdvanced": 660,
+    "low": 1200
+  },
+  "total": 3180,
+  "uniqueNormalizedEnglish": 3180,
+  "duplicateEnglish": [],
+  "duplicateIds": [],
+  "malformedSourceOrders": []
+}
